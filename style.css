@@ -1,0 +1,22 @@
+table, tr, td{
+    border: 1px solid black;
+    border-collapse: collapse;
+    text-align: center;
+}
+ 
+table, tr:first-child{
+    background-color: purple;
+    font-weight: bold;
+}
+ 
+table, tr:not(:first-child):nth-child(even){
+    background-color: blueviolet;
+}
+ 
+table, tr:not(:first-child):nth-child(odd){
+    background-color: salmon;
+}
+
+tr:not(:first-child):hover{
+    background-color: white;
+}
