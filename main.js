@@ -34,26 +34,17 @@ document.body.appendChild(table);
 const thead = document.createElement('thead');
 table.appendChild(thead);
 
-const tr = document.createElement('tr');
-thead.appendChild(tr);
+const headerRow = document.createElement('tr');
+thead.appendChild(headerRow);
 
-const th_married = document.createElement('th');
-tr.appendChild(th_married);
-th_married.innerHTML = 'Házas-e';
+const th_married = createTableElement('th', 'Házas-e', headerRow);
 
-const th_pet = document.createElement('th');
-tr.appendChild(th_pet);
-th_pet.innerHTML = 'Háziállat';
+const th_pet = createTableElement('th', 'Háziállat', headerRow);
 
-const th_lastname = document.createElement('th');
-tr.appendChild(th_lastname);
-th_lastname.innerHTML = 'Vezetéknév';
+const th_lastname = createTableElement('th', 'Vezetéknév', headerRow);
 
-const th_firstname = document.createElement('th');
-tr.appendChild(th_firstname);
-th_firstname.innerHTML = 'Keresztnév';
-
-th_lastname.colSpan = 2;
+const th_firstname = createTableElement('th', 'Keresztnév', headerRow);
+th_firstname.colSpan = 2;
 
 const tbody = document.createElement('tbody');
 table.appendChild(tbody);
@@ -61,43 +52,57 @@ table.appendChild(tbody);
 const form = document.getElementById('form');
 form.addEventListener('submit', function(e) {
     e.preventDefault();
-    const lastname = document.getElementById('lastname');
-    const firstname1 = document.getElementById('firstname1');
-    const firstname2 = document.getElementById('firstname2');
-    const married = document.getElementById('married');
-    const pet = document.getElementById('pet');
-
-    const firstname1Value = firstname1.value;
-    let firstname2Value = firstname2.value;
-    const lastnameValue = lastname.value;
-    const marriedValue = married.checked;
-    const petValue = pet.value;
-
-    if (firstname2Value === '') {
-        firstname2Value = undefined;
-    }
-    const newPerson = {
-        firstname1: firstname1Value,
-        firstname2: firstname2Value,
-        lastname: lastnameValue,
-        married: marriedValue,
-        pet: petValue
-    };
     
-    array.push(newPerson);
-    rendertable();
+    if (validateFields()) {  
+        const lastname = document.getElementById('lastname').value;
+        const firstname1 = document.getElementById('firstname1').value;
+        const firstname2 = document.getElementById('firstname2').value;
+        const married = document.getElementById('married').checked;
+        const pet = document.getElementById('pet').value;
+
+        const newPerson = {
+            firstname1: firstname1,
+            firstname2: firstname2 || undefined,
+            lastname: lastname,
+            married: married,
+            pet: pet
+        };
+
+        array.push(newPerson);
+        rendertable();
+    }
 });
 
-if(validateFields(lastname, firstname1, pet)){
-    const newperson = {
-        firstname1: firstname1Value,
-        firstname2: firstname2Value,
-        lastname: lastnameValue,
-        married: marriedValue,
-        pet: petValue
+function validateFields() {
+    let result = true;
+
+    const errorMessages = document.querySelectorAll('.error');
+    errorMessages.forEach(error => {
+        error.innerHTML = '';
+    });
+
+    const lastname = document.getElementById('lastname');
+    if (lastname.value === "") {
+        const error = lastname.parentElement.querySelector('.error');
+        error.innerHTML = 'Kötelező';
+        result = false;
     }
-    array.push(newperson);
-    rendertable();
+
+    const firstname1 = document.getElementById('firstname1');
+    if (firstname1.value === "") {
+        const error = firstname1.parentElement.querySelector('.error');
+        error.innerHTML = 'Kötelező';
+        result = false;
+    }
+
+    const pet = document.getElementById('pet');
+    if (pet.value === "") {
+        const error = pet.parentElement.querySelector('.error');
+        error.innerHTML = 'Kötelező';
+        result = false;
+    }
+
+    return result;
 }
 
 function rendertable() {
@@ -106,28 +111,16 @@ function rendertable() {
         const tbody_tr = document.createElement('tr');
         tbody.appendChild(tbody_tr);
 
-        const td_married = document.createElement('td');
-        tbody_tr.appendChild(td_married);
-        td_married.innerHTML = pers.married ? 'igen' : 'nem';
+        createTableElement('td', pers.married ? 'igen' : 'nem', tbody_tr);
+        createTableElement('td', pers.pet, tbody_tr);
+        createTableElement('td', pers.lastname, tbody_tr);
 
-        const td_pet = document.createElement('td');
-        tbody_tr.appendChild(td_pet);
-        td_pet.innerHTML = pers.pet;
-
-        const tbody_td_lastname = document.createElement('td');
-        tbody_tr.appendChild(tbody_td_lastname);
-        tbody_td_lastname.innerHTML = pers.lastname;
-
-        const tbody_td_firstname1 = document.createElement('td');
-        tbody_tr.appendChild(tbody_td_firstname1);
-        tbody_td_firstname1.innerHTML = pers.firstname1;
+        const firstname1Cell = createTableElement('td', pers.firstname1, tbody_tr);
 
         if (pers.firstname2 !== undefined) {
-            const tbody_td_firstname2 = document.createElement('td');
-            tbody_tr.appendChild(tbody_td_firstname2);
-            tbody_td_firstname2.innerHTML = pers.firstname2;
+            createTableElement('td', pers.firstname2, tbody_tr);
         } else {
-            tbody_td_firstname1.colSpan = 2;
+            firstname1Cell.colSpan = 2;
         }
 
         tbody_tr.addEventListener('click', function(e) {
@@ -140,30 +133,18 @@ function rendertable() {
     }
 }
 
-rendertable();
+/**
+ * @param {'td' | 'th'} cellTag
+ * @param {string} innerHTML
+ * @param {HTMLTableRowElement} parentElement
+ * @returns {HTMLTableCellElement}
+ */
 
-function validateFields(lastname, firstname1, pet){
-    let result = true;
-    if(lastname.value === ""){
-        const apa = lastname.parentElement;
-        const error = apa.querySelector('.error')
-        error.innerHTML = 'Kötelező'
-        result = false;
-    }
-
-    if(firstname1.value === ""){
-        const apa = firstname1.parentElement;
-        const error = apa.querySelector('.error')
-        error.innerHTML = 'Kötelező'
-        result = false;
-    }
-
-    if(pet.value === ""){
-        const apa = pet.parentElement;
-        const error = apa.querySelector('.error')
-        error.innerHTML = 'Kötelező'
-        result = false;
-    }
-
-    return result;
+function createTableElement(cellTag, innerHTML, parentElement) {
+    const element = document.createElement(cellTag);
+    element.innerHTML = innerHTML;
+    parentElement.appendChild(element);
+    return element;
 }
+
+rendertable();
